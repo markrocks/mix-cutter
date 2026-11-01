@@ -6,6 +6,8 @@ export async function renderSettings(root, ctx, params) {
   if (params.get('sc_error')) toast(`SoundCloud: ${params.get('sc_error')}`, 'err');
   if (params.has('sc') || params.has('sc_error')) history.replaceState(null, '', '#/settings');
 
+  const isLocalHost = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+
   const draw = async () => {
     await ctx.refreshInfo();
     const { settings, soundcloud: sc, detectionDefaults } = ctx.info;
@@ -82,6 +84,12 @@ SOUNDCLOUD_REDIRECT_URI=${esc(sc.redirectUri || `${location.origin}/auth/soundcl
           </div>
         </section>
 
+        <section class="card card-pad stack ${isLocalHost ? '' : 'hidden'}">
+          <h2>App</h2>
+          <p class="muted">When opened from its app icon, Mix Cutter keeps running in the background after you close this tab, so phone uploads keep working. Stop it here when you're done. Clicking the app icon starts it again.</p>
+          <div><button class="btn" data-act="shutdown">Stop Mix Cutter</button></div>
+        </section>
+
         <section class="card card-pad stack">
           <h2>Saved bands</h2>
           <div class="band-list">
@@ -123,6 +131,20 @@ SOUNDCLOUD_REDIRECT_URI=${esc(sc.redirectUri || `${location.origin}/auth/soundcl
         });
         toast('Settings saved');
         await draw();
+      } else if (act === 'shutdown') {
+        if (!(await confirmModal('Stop Mix Cutter?', 'The app stops running on this computer. Open it again any time from the Mix Cutter app icon.', 'Stop'))) return;
+        try {
+          await api.shutdown();
+        } catch (err) {
+          if (!/still working/.test(err.message)) throw err;
+          if (!(await confirmModal('Still working', `${err.message}`, 'Stop anyway'))) return;
+          await api.shutdown(true);
+        }
+        document.querySelector('#view').innerHTML = `
+          <div class="card card-pad stack" style="max-width:520px;margin:60px auto;text-align:center">
+            <h2>Mix Cutter has stopped</h2>
+            <p class="muted">You can close this tab. To use it again, click the Mix Cutter app icon.</p>
+          </div>`;
       } else if (act === 'reset-detection') {
         await api.saveSettings({ detection: JSON.parse(root.dataset.defaults) });
         toast('Detection settings reset');

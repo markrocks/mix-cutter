@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff7c42"/>
+      <stop offset="1" stop-color="#e2470f"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.22"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <!-- macOS icon grid: 824px body centred in a 1024 canvas -->
+  <g filter="url(#shadow)">
+    <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#bg)"/>
+  </g>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#shine)"/>
+  <!-- waveform: song on the left, cut line, song on the right -->
+  <g stroke="#fff" stroke-width="44" stroke-linecap="round">
+    <path d="M232 512v0"/>
+    <path d="M296 452v120"/>
+    <path d="M360 352v320"/>
+    <path d="M424 412v200"/>
+    <path d="M600 382v260"/>
+    <path d="M664 302v420"/>
+    <path d="M728 422v180"/>
+    <path d="M792 482v60"/>
+  </g>
+  <!-- the cut -->
+  <path d="M512 236v552" stroke="#fff" stroke-opacity="0.9" stroke-width="14" stroke-linecap="round" stroke-dasharray="30 30"/>
+  <circle cx="512" cy="236" r="26" fill="#fff"/>
+  <circle cx="512" cy="788" r="26" fill="#fff"/>
+</svg>

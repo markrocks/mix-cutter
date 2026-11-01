@@ -219,6 +219,19 @@ app.post('/api/soundcloud/disconnect', (req, res) => {
   res.json(sc.status());
 });
 
+/* ---------------- app lifecycle ---------------- */
+
+const isLocal = (req) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress);
+
+// Lets the desktop launcher's background server be stopped from Settings.
+app.post('/api/shutdown', (req, res) => {
+  if (!isLocal(req)) throw fail(403, 'Mix Cutter can only be stopped from the computer it runs on.');
+  if (pipeline.anyBusy() && !req.body?.force) throw fail(409, 'Mix Cutter is still working on a session. Wait for it to finish, or stop anyway.');
+  res.json({ ok: true });
+  console.log('Stopping (requested from Settings)');
+  setTimeout(() => process.exit(0), 200);
+});
+
 /* ---------------- errors ---------------- */
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'Not found' }));

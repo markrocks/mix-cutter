@@ -28,6 +28,7 @@ export const api = {
   reveal: (id) => req('POST', `/api/sessions/${id}/reveal`),
   deleteSession: (id) => req('DELETE', `/api/sessions/${id}`),
   disconnectSoundCloud: () => req('POST', '/api/soundcloud/disconnect'),
+  shutdown: (force = false) => req('POST', '/api/shutdown', { force }),
 };
 
 /** Multipart upload with progress (fetch can't report upload progress). */

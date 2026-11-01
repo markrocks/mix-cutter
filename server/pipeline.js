@@ -14,6 +14,7 @@ import { fmtClock } from './util.js';
 const running = new Set();
 
 export const isBusy = (id) => running.has(id);
+export const anyBusy = () => running.size > 0;
 
 /**
  * Run one background step with a per-session lock. The status is set

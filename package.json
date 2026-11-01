@@ -11,7 +11,8 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "test": "node --test test/*.test.js",
-    "fixture": "bash test/make-fixture.sh"
+    "fixture": "bash test/make-fixture.sh",
+    "install-app": "node scripts/install-app.js"
   },
   "dependencies": {
     "express": "^5.1.0",
