@@ -1,0 +1,21 @@
+{
+  "name": "mix-cutter",
+  "version": "0.1.0",
+  "description": "Capture band practice recordings, cut them into songs, and publish them to SoundCloud.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.12"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node --test test/*.test.js",
+    "fixture": "bash test/make-fixture.sh"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4"
+  }
+}
