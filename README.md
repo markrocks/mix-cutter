@@ -1,68 +1,158 @@
 # Mix Cutter
 
-Turn a full band-practice recording into numbered, tagged song files, then share them with the band on SoundCloud.
+**Turn a full band-practice recording into separate, numbered song files and share them with your band on SoundCloud.**
 
-**Import → Cut up songs → Publish**
+You record the whole practice: talking, tuning, songs, more talking, more songs. Mix Cutter finds where each song starts and stops, cuts them out, saves them as tagged MP3s in a neatly named folder, and can upload them to SoundCloud as a private playlist the band can listen to with one link.
 
-1. **Import**: drop in the recording (desktop or phone). Pick the band from your saved list (or add one), the date (defaults to today), and any notes. Choose **Stop for review** or **Do everything automatically**.
-2. **Cut up songs**: Mix Cutter listens to the recording and finds each song (loud, sustained playing) between the talking (quieter, choppy). In review mode you get a waveform editor where you can drag song edges, play, rename, split, merge, skip or add songs, and re-detect with different sensitivity. **Save** writes 320 kbps MP3s with ID3 tags to:
+It runs on your computer and you use it in a web browser. You can also send recordings to it from your phone over Wi-Fi.
+
+---
+
+## What it does
+
+Mix Cutter works in three steps:
+
+### 1. Import
+- Drag and drop a recording, or click to choose one. Most formats work: MP3, M4A / iPhone Voice Memos, WAV, AIFF, FLAC, even phone videos.
+- Pick the **band** from your saved list, or type a new one and it is remembered for next time.
+- Set the **date**. It defaults to today, with a date picker.
+- Add optional **notes**: who was there, what you worked on, and so on.
+- Choose what happens after the songs are found:
+  - **Stop so I can review**: check and adjust the cuts before saving (recommended).
+  - **Do everything automatically**: cut, save, and upload without stopping.
+
+### 2. Cut up songs
+- Mix Cutter listens to the recording and tells **songs** (loud, continuous playing) apart from **talk** (quieter, choppy).
+- In review mode you get a waveform editor where you can:
+  - drag the edges of a song to adjust where it starts or ends
+  - play any song, or click anywhere to listen
+  - rename songs, skip ones you don't want, split one in two, merge two together, or add a song by hand
+  - re-run detection with a sensitivity slider if it found too many or too few songs
+- **Save** writes high-quality (320 kbps) MP3s with artist, album, and track tags:
+  ```
+  ~/Music/Mix Cutter/<Band>/<YYYY-MM-DD> - <Band> Practice/
+    01 - Song 1 (0m23s).mp3        ← number, name, and where it starts in the recording
+    02 - Song 2 (12m40s).mp3
+    Session Info.txt               ← band, date, notes, and a track list with timestamps
+  ```
+
+### 3. Publish to SoundCloud
+- Uploads each song to your SoundCloud account as a **private** track.
+- Groups them into a **private playlist** named like *"The Garage Kings - Practice 2026-11-01"*.
+- Gives you a share link to copy into the band chat. Only people with the link can listen.
+
+---
+
+## How to run it
+
+### Requirements
+- A Mac (Windows and Linux should work but are untested)
+- [Node.js](https://nodejs.org) 20.12 or newer
+- [ffmpeg](https://ffmpeg.org) for audio processing. On a Mac with [Homebrew](https://brew.sh): `brew install ffmpeg`
+
+### Install
+```bash
+git clone https://github.com/markrocks/mix-cutter.git
+cd mix-cutter
+npm install
+cp .env.example .env
+```
+
+### Start
+```bash
+npm start
+```
+Then open **http://localhost:4317** in your browser.
+
+Leave the Terminal window open while you use the app. Press `Ctrl + C` to stop it.
+
+### Try it without a real recording
+Build a short fake practice recording (spoken chatter plus three made-up "songs") and import it:
+```bash
+npm run fixture      # creates test/fixtures/practice.m4a (macOS only, uses the `say` command)
+```
+
+---
+
+## Upload from your phone
+
+1. Start the app on your computer.
+2. Click **Phone upload** in the top bar. A QR code appears.
+3. Scan it with your phone's camera. Your phone and computer must be on the **same Wi-Fi**.
+4. Choose the recording on your phone and import it as usual. It is sent straight to your computer.
+
+To turn phone access off, set `HOST=127.0.0.1` in `.env`.
+
+---
+
+## Connect SoundCloud
+
+You only need this for step 3 (publishing). Everything else works without it.
+
+1. **Create a SoundCloud app** at https://soundcloud.com/you/apps.
+   - *App URL*: any website you own, such as your personal site or this GitHub repo. It's only shown on the app's info page.
+   - *Redirect URI*: exactly `http://localhost:4317/auth/soundcloud/callback`
+   - SoundCloud may review new apps before the credentials work.
+2. **Add the credentials** to the `.env` file in the `mix-cutter` folder. It's a hidden file: in Finder press `Cmd + Shift + .` to see it, or run `nano .env` in Terminal.
    ```
-   ~/Music/Mix Cutter/<Band>/<YYYY-MM-DD> - <Band> Practice/
-     01 - Song 1 (0m23s).mp3        ← number, label, where it starts in the recording
-     02 - Song 2 (12m40s).mp3
-     Session Info.txt               ← band, date, notes, track list with timestamps
+   SOUNDCLOUD_CLIENT_ID=your-client-id
+   SOUNDCLOUD_CLIENT_SECRET=your-client-secret
+   SOUNDCLOUD_REDIRECT_URI=http://localhost:4317/auth/soundcloud/callback
    ```
-3. **Publish**: uploads each song to your SoundCloud account as a **private** track and groups them into a **private playlist** ("Band - Practice 2026-11-01"). You get a secret link to paste into the band chat.
+3. **Restart** the app (`Ctrl + C`, then `npm start`).
+4. In the app, go to **Settings → Connect SoundCloud** and sign in. Do this on the computer at `http://localhost:4317`, not from a phone.
 
-## Run it
+Notes:
+- `.env` is never committed to git, so your secret stays on your computer.
+- Set `SOUNDCLOUD_DRY_RUN=1` to simulate uploads, so you can test the whole flow without touching your account.
+- Free SoundCloud accounts have a limit on total upload time. Long practices may need SoundCloud Pro.
 
-Requires Node 20.12+ and ffmpeg (`brew install ffmpeg`).
+---
+
+## Settings
+
+Open **Settings** (gear icon) to change:
+- where song folders are saved (default `~/Music/Mix Cutter`)
+- the default mode for new imports (review or automatic)
+- song-detection defaults: sensitivity, shortest song length, how long a quiet gap inside a song can be, and extra lead-in/tail
+- your saved band names
+
+All other options live in `.env` (see `.env.example`): port, phone access, output folder, and SoundCloud.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `ffmpeg: command not found` | Install ffmpeg: `brew install ffmpeg` |
+| Port 4317 already in use | Another copy is running. Stop it, or set `PORT=` to another number in `.env` (and update the SoundCloud redirect URI to match). |
+| Phone can't open the page | Check both devices are on the same Wi-Fi, and that `HOST=0.0.0.0` in `.env`. Your Mac's firewall may ask to allow incoming connections for Node. Allow it. |
+| Songs missed or merged together | On the review screen, open **Detection settings**, adjust the sensitivity or "join gaps under", and press **Re-detect**. |
+| SoundCloud sign-in fails | The redirect URI in `.env` and on your SoundCloud app must match exactly. |
+
+---
+
+## For developers
 
 ```bash
-cd ~/Development/mix-cutter
-npm install
-npm start            # http://localhost:4317
+npm run dev     # restart automatically when server files change
+npm test        # song-detection unit tests
 ```
 
-### Upload from a phone
-The server listens on your Wi-Fi network. Click **Phone upload** in the top bar and scan the QR code. The phone must be on the same Wi-Fi as the desktop. Files go straight to the desktop. Set `HOST=127.0.0.1` in `.env` to turn this off.
-
-## SoundCloud setup (to do)
-
-Edit `.env` (already created from `.env.example`):
-
-```
-SOUNDCLOUD_CLIENT_ID=...
-SOUNDCLOUD_CLIENT_SECRET=...
-SOUNDCLOUD_REDIRECT_URI=http://localhost:4317/auth/soundcloud/callback
-```
-
-- The redirect URI must **exactly** match the one registered on your app at soundcloud.com/you/apps.
-- Restart `npm start`, open **Settings → Connect SoundCloud**, and sign in once. Tokens are stored in `data/soundcloud.json` and refresh automatically.
-- `SOUNDCLOUD_DRY_RUN=1` simulates uploads, so you can try the whole flow without touching your account.
-- Free SoundCloud accounts have a limited total upload time. Long practices may need SoundCloud Pro.
-
-## How song detection works
-`server/segment.js`. Per second of audio it measures loudness and a "low-energy ratio" (how often the sound drops toward silence; speech does, a band playing doesn't). It smooths both, automatically picks a threshold between "talk" and "music" (Otsu's method), bridges short gaps inside songs (breakdowns), drops anything shorter than the minimum song length, and pads each song so count-ins and ringing last chords are kept. Every knob is adjustable per session (Detection settings) or as defaults (Settings).
-
-## Project layout
 ```
 server/
-  index.js       Express API + static UI
-  pipeline.js    background steps: analyze → cut → upload (auto-chaining in automatic mode)
-  analyze.js     one ffmpeg pass: features + waveform peaks + browser preview
-  segment.js     song detection (pure, unit-tested)
-  cutter.js      ffmpeg cutting, tagging, folder naming
-  soundcloud.js  OAuth 2.1 + PKCE, track upload, playlist creation
-  store.js       JSON storage: bands, settings, sessions (in data/)
-public/          No-build frontend (ES modules): import, review editor, publish, settings
-test/            npm test (detection unit tests), npm run fixture (builds a fake practice recording)
+  index.js       Express API + serves the web UI
+  pipeline.js    background steps: analyze → cut → upload (chains automatically in automatic mode)
+  analyze.js     one ffmpeg pass: audio features + waveform + browser preview
+  segment.js     song detection (pure functions, unit-tested)
+  cutter.js      ffmpeg cutting, MP3 tagging, folder naming
+  soundcloud.js  OAuth 2.1 + PKCE sign-in, track upload, playlist creation
+  store.js       JSON storage for bands, settings, sessions (in data/)
+public/          browser UI (plain ES modules, no build step)
+test/            unit tests and the fake-recording generator
 ```
 
-Working data (uploads, analysis, previews) lives in `data/`. Deleting a session in the app removes only that working copy; saved song folders and SoundCloud uploads are kept.
+**How song detection works:** for every second of audio, Mix Cutter measures loudness and how often the sound drops toward silence (speech does this constantly; a band playing doesn't). It smooths these, picks a talk-vs-music threshold automatically (Otsu's method), joins short quiet gaps inside songs, drops anything shorter than the minimum song length, and pads each song so count-ins and the last ringing chord are kept.
 
-## Ideas for next iterations
-- Fingerprint/compare songs across practices to suggest real song names ("this sounds like *Song A* from last week")
-- Set-list field on import to auto-name songs in order
-- Package as a menu-bar / Electron app; optional cloud relay so phones can upload from anywhere
-- Loudness-normalize each song (EBU R128) before export
+Working data (uploads, analysis, previews) is stored in `data/`. Deleting a session in the app removes only that working copy. Saved song folders and SoundCloud uploads are kept.
