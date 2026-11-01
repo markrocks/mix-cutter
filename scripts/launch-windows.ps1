@@ -10,6 +10,9 @@ if (Test-Path $envFile) {
   if ($line) { $Port = ($line -split '=', 2)[1].Trim().Trim('"', "'") }
 }
 $Url = "http://localhost:$Port"
+# Health checks use 127.0.0.1: Windows PowerShell tries IPv6 (::1) for "localhost" first,
+# and the server listens on IPv4 only, so the 1s check would always time out.
+$CheckUrl = "http://127.0.0.1:$Port"
 $LogDir = Join-Path $env:LOCALAPPDATA 'Mix Cutter'
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
@@ -17,7 +20,7 @@ function Show-Error($msg) {
   (New-Object -ComObject WScript.Shell).Popup($msg, 0, 'Mix Cutter', 16) | Out-Null
 }
 function Test-Running {
-  try { Invoke-WebRequest "$Url/api/info" -UseBasicParsing -TimeoutSec 1 | Out-Null; return $true } catch { return $false }
+  try { Invoke-WebRequest "$CheckUrl/api/info" -UseBasicParsing -TimeoutSec 1 | Out-Null; return $true } catch { return $false }
 }
 
 if (-not (Test-Running)) {
